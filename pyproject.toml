@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "epml-itmo"
+version = "0.1.0"
+description = "Data Science Project for EPML ITMO"
+authors = ["Anton Tikhonov"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+pandas = "^2.3.3"
+numpy = "^2.3.5"
+scikit-learn = "^1.7.2"
+ipykernel = "^7.1.0"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.14.6"
+mypy = "^1.18.2"
+bandit = "^1.9.2"
+pre-commit = "^4.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
