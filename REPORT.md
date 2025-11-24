@@ -96,5 +96,3 @@ RUN poetry install --no-root --only main
 COPY . .
 CMD ["python"]
 ```
-
-![Docker build demonstration](image.png)
