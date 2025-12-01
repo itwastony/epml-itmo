@@ -84,6 +84,23 @@ poetry run bandit -r src
 
 Pre-commit hooks are configured to run automatically on commit.
 
+### Development Workflow
+
+This project follows a simplified Git Flow:
+- `main`: Stable releases. **Direct commits are disabled.**
+- `develop`: Main integration branch.
+- `feature/name`: New features, branched from `develop`.
+- `fix/name`: Bug fixes, branched from `develop`.
+
+To start a new feature:
+```bash
+git checkout develop
+git pull
+git checkout -b feature/my-new-feature
+```
+
+When finished, open a Pull Request to `develop`.
+
 ### Docker
 
 Build the docker image:
