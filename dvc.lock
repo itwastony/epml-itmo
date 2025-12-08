@@ -1,0 +1,31 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/data/make_dataset.py data/raw data/processed
+    deps:
+    - path: data/raw/winequality-red.csv
+      hash: md5
+      md5: 2daeecee174368f8a33b82c8cccae3a5
+      size: 84199
+    - path: src/data/make_dataset.py
+      hash: md5
+      md5: c485f51def978f2d9c6e2f92c5049db4
+      size: 1853
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: e32cf3ebecf024f29e7403c2720f9f65.dir
+      size: 92145
+      nfiles: 2
+  train:
+    cmd: python src/models/train_model.py data/processed
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: e32cf3ebecf024f29e7403c2720f9f65.dir
+      size: 92145
+      nfiles: 2
+    - path: src/models/train_model.py
+      hash: md5
+      md5: 715de07ddf949c59578ad0717ed3d400
+      size: 2887

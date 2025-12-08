@@ -1,0 +1,17 @@
+stages:
+  prepare:
+    cmd: python src/data/make_dataset.py data/raw data/processed
+    deps:
+      - data/raw/winequality-red.csv
+      - src/data/make_dataset.py
+    outs:
+      - data/processed
+
+  train:
+    cmd: python src/models/train_model.py data/processed
+    deps:
+      - data/processed
+      - src/models/train_model.py
+    # We don't strictly track model output in DVC here because we use MLflow registry,
+    # but we could track a local artifact if needed.
+

@@ -21,15 +21,18 @@
    dvc config core.analytics false
    ```
 
-3. **Версионирование данных**:
-   Датасет Wine Quality был загружен и добавлен в DVC.
+3. **Версионирование данных и пайплайн**:
+   - Датасет Wine Quality отслеживается (`data/raw/winequality-red.csv.dvc`).
+   - Настроен DVC пайплайн (`dvc.yaml`) с этапами `prepare` и `train`.
+   
    ```bash
-   python src/data/make_dataset.py data/raw data/processed
+   # Добавление данных
    dvc add data/raw/winequality-red.csv
    dvc push
-   ```
    
-   Файл `.dvc` и `.gitignore` были закоммичены в git.
+   # Запуск пайплайна
+   dvc repro
+   ```
 
 ## Настройка MLflow
 
@@ -94,13 +97,18 @@ Created version '2' of model 'WineQualityRandomForest'.
    ```
 
 3. **Получить данные (DVC)**:
-   Необходимо иметь доступ к настроенному remote или (для локального теста) просто выполнить pull, если remote доступен.
    ```bash
    poetry run dvc pull
    ```
    *Примечание: Так как remote локальный (`../dvc_remote`), он должен существовать на машине. В реальном проекте это был бы S3 bucket.*
 
-4. **Запустить обучение**:
+4. **Запустить обучение (через DVC Pipeline)**:
+   Это автоматически запустит подготовку данных (`prepare`) и обучение (`train`).
+   ```bash
+   poetry run dvc repro
+   ```
+
+   *Альтернативно (вручную)*:
    ```bash
    poetry run python src/data/make_dataset.py data/raw data/processed
    poetry run python src/models/train_model.py data/processed
