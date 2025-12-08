@@ -11,7 +11,6 @@ from dotenv import find_dotenv, load_dotenv
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
-# Ignore warnings
 warnings.filterwarnings("ignore")
 
 
@@ -39,8 +38,6 @@ def main(input_filepath: str, n_estimators: int, max_depth: int) -> None:
     train_df = pd.read_csv(train_path)
     test_df = pd.read_csv(test_path)
 
-    # Assume last column is target (quality)
-    # Wine quality is usually 3-8. We can treat it as multiclass classification.
     X_train = train_df.iloc[:, :-1]
     y_train = train_df.iloc[:, -1]
     X_test = test_df.iloc[:, :-1]
