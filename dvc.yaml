@@ -12,6 +12,4 @@ stages:
     deps:
       - data/processed
       - src/models/train_model.py
-    # We don't strictly track model output in DVC here because we use MLflow registry,
-    # but we could track a local artifact if needed.
 
