@@ -1,98 +1,125 @@
-# Project Setup Report
+# Отчет по ДЗ 2: Версионирование данных и моделей
 
-## 1. Project Structure
-The project structure was generated using `cookiecutter` with the `drivendata/cookiecutter-data-science` template. This ensures a standard, organized layout for data science projects.
+## Инструменты
 
-**Key Directories:**
-- `src/`: Source code
-- `data/`: Data layers (raw, processed, etc.)
-- `notebooks/`: Jupyter notebooks
-- `models/`: Serialized models
+- **Версионирование данных**: DVC (Data Version Control)
+- **Версионирование моделей**: MLflow
+- **Удаленное хранилище (Remote Storage)**: Local Storage (эмуляция remote)
 
-## 2. Dependency Management
-**Tool:** Poetry
-**Rationale:** Poetry provides robust dependency resolution and virtual environment management, superior to simple `requirements.txt`.
+## Настройка DVC
 
-**Configuration (`pyproject.toml`):**
-```toml
-[project]
-name = "epml-itmo"
-requires-python = ">=3.12"
-dependencies = [
-    "pandas (>=2.3.3,<3.0.0)",
-    "numpy (>=2.3.5,<3.0.0)",
-    "scikit-learn (>=1.7.2,<2.0.0)",
-    "ipykernel (>=7.1.0,<8.0.0)"
-]
+1. **Инициализация DVC**:
+   ```bash
+   dvc init
+   ```
 
-[dependency-groups]
-dev = [
-    "ruff (>=0.14.6,<0.15.0)",
-    "mypy (>=1.18.2,<2.0.0)",
-    "bandit (>=1.9.2,<2.0.0)",
-    "pre-commit (>=4.5.0,<5.0.0)"
-]
-```
+2. **Настройка Remote Storage**:
+   Использована локальная директория `../dvc_remote` для имитации удаленного хранилища.
+   ```bash
+   mkdir -p ../dvc_remote
+   dvc remote add -d localremote ../dvc_remote
+   dvc config core.analytics false
+   ```
 
-## 3. Code Quality
-The following tools are configured:
+3. **Версионирование данных**:
+   Датасет Wine Quality был загружен и добавлен в DVC.
+   ```bash
+   python src/data/make_dataset.py data/raw data/processed
+   dvc add data/raw/winequality-red.csv
+   dvc push
+   ```
+   
+   Файл `.dvc` и `.gitignore` были закоммичены в git.
 
-1.  **Ruff**: Fast linter and formatter (replaces Black, isort, Flake8).
-2.  **MyPy**: Static type checker.
-3.  **Bandit**: Security linter.
+## Настройка MLflow
 
-**Pre-commit Hooks (`.pre-commit-config.yaml`):**
-```yaml
-repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.6
-    hooks:
-      - id: ruff
-        args: [ --fix ]
-      - id: ruff-format
-  
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.1
-    hooks:
-      - id: mypy
-        args: [--ignore-missing-imports]
+MLflow настроен для трекинга экспериментов и реестра моделей.
 
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
-    hooks:
-      - id: bandit
-        args: ["-c", "pyproject.toml"]
-        additional_dependencies: ["bandit[toml]"]
-```
+1. **Запуск сервера (опционально) или локальный трекинг**:
+   В данном проекте используется локальный трекинг в директорию `mlruns`.
 
-**Linter Execution Proof:**
-The linters are active and detecting issues in the generated template code (e.g., unused imports in `conf.py`):
+2. **Обучение и логирование**:
+   Скрипт `src/models/train_model.py` обучает RandomForest и логирует параметры, метрики и модель.
+   
+   Пример запуска:
+   ```bash
+   poetry run python src/models/train_model.py data/processed
+   ```
+
+   Пример запуска с другими гиперпараметрами (версия 2):
+   ```bash
+   poetry run python src/models/train_model.py data/processed --n_estimators 200 --max_depth 10
+   ```
+
+## Результаты
+
+### Логи запуска (Screenshots emulation)
+
+**Запуск 1 (Default params):**
 ```text
-UP009 [*] UTF-8 encoding declaration is unnecessary
- --> docs/conf.py:1:1
-  |
-1 | # -*- coding: utf-8 -*-
-  | ^^^^^^^^^^^^^^^^^^^^^^^
-  
-F401 [*] `os` imported but unused
-  --> docs/conf.py:14:8
-   |
-14 | import os
-   |        ^^
+2025-12-08 22:12:27,045 - __main__ - INFO - Training model...
+2025/12/08 22:12:27 INFO mlflow.tracking.fluent: Experiment with name 'wine_quality_experiment' does not exist. Creating a new experiment.
+2025-12-08 22:12:28,243 - __main__ - INFO - Accuracy: 0.659375
+2025-12-08 22:12:28,243 - __main__ - INFO - F1 Score: 0.6442498546491976
+Successfully registered model 'WineQualityRandomForest'.
+Created version '1' of model 'WineQualityRandomForest'.
 ```
 
-## 4. Git Workflow
-- **Repository Initialized**: Yes
-- **Branching**: `main` branch established.
-- **.gitignore**: Configured for Python, Data Science, and IDE files.
-
-## 5. Containerization
-**Dockerfile** created based on `python:3.12-slim`, using multi-stage build concepts (installing deps via poetry).
-
-```dockerfile
-FROM python:3.12-slim
-# ... configuration ...
-RUN poetry install --no-root --only main
-COPY . .
-CMD ["python"]
+**Запуск 2 (Tuned params):**
+```text
+2025-12-08 22:12:56,617 - __main__ - INFO - Training model...
+2025-12-08 22:12:57,279 - __main__ - INFO - Accuracy: 0.646875
+2025-12-08 22:12:57,279 - __main__ - INFO - F1 Score: 0.6266469214465146
+Registered model 'WineQualityRandomForest' already exists. Creating a new version of this model...
+Created version '2' of model 'WineQualityRandomForest'.
 ```
+
+## Воспроизводимость
+
+Для обеспечения воспроизводимости используются:
+1. **DVC** для данных (`dvc.lock` / `.dvc` файлы).
+2. **Poetry** для зависимостей (`poetry.lock`).
+3. **Git** для кода.
+
+### Инструкция по воспроизведению
+
+1. **Клонировать репозиторий и перейти в ветку**:
+   ```bash
+   git checkout HW2
+   ```
+
+2. **Установить зависимости**:
+   ```bash
+   poetry install
+   ```
+
+3. **Получить данные (DVC)**:
+   Необходимо иметь доступ к настроенному remote или (для локального теста) просто выполнить pull, если remote доступен.
+   ```bash
+   poetry run dvc pull
+   ```
+   *Примечание: Так как remote локальный (`../dvc_remote`), он должен существовать на машине. В реальном проекте это был бы S3 bucket.*
+
+4. **Запустить обучение**:
+   ```bash
+   poetry run python src/data/make_dataset.py data/raw data/processed
+   poetry run python src/models/train_model.py data/processed
+   ```
+
+5. **Просмотр результатов MLflow**:
+   ```bash
+   poetry run mlflow ui
+   ```
+
+## Docker
+
+Docker образ собирается с помощью команды:
+```bash
+docker build -t epml-hw2 .
+```
+
+Запуск контейнера:
+```bash
+docker run -it epml-hw2 bash
+```
+Внутри контейнера можно выполнить скрипты обучения (при наличии данных или настроенном доступе к remote).
