@@ -1,142 +1,87 @@
-# Отчет по ДЗ 2: Версионирование данных и моделей
+# ДЗ 3: Отчет о трекинге экспериментов
 
-## Инструменты
+## 1. Выбор инструмента и настройка
 
-- **Версионирование данных**: DVC (Data Version Control)
-- **Версионирование моделей**: MLflow
-- **Удаленное хранилище (Remote Storage)**: Local Storage (эмуляция remote)
+**Выбранный инструмент:** MLflow
 
-## Настройка DVC
+Я выбрал MLflow из-за его широкого распространения, простоты настройки и отличной интеграции с Python и Scikit-learn.
 
-1. **Инициализация DVC**:
-   ```bash
-   dvc init
-   ```
+### Детали настройки
+- **Установка:** Добавил `mlflow` в `pyproject.toml` и установил через Poetry.
+- **Хранилище:** Настроил использование локального файлового хранилища (`./mlruns`) для простоты в текущем окружении разработки.
+    ```python
+    mlflow.set_tracking_uri("file://" + str(Path.cwd() / "mlruns"))
+    ```
+- **Управление экспериментами:** Создал эксперименты с именами `wine_quality_experiment` (для одиночных запусков) и `wine_quality_multimodel_v1` (для сравнительного анализа).
 
-2. **Настройка Remote Storage**:
-   Использована локальная директория `../dvc_remote` для имитации удаленного хранилища.
-   ```bash
-   mkdir -p ../dvc_remote
-   dvc remote add -d localremote ../dvc_remote
-   dvc config core.analytics false
-   ```
+## 2. Интеграция с кодом
 
-3. **Версионирование данных и пайплайн**:
-   - Датасет Wine Quality отслеживается (`data/raw/winequality-red.csv.dvc`).
-   - Настроен DVC пайплайн (`dvc.yaml`) с этапами `prepare` и `train`.
-   
-   ```bash
-   # Добавление данных
-   dvc add data/raw/winequality-red.csv
-   dvc push
-   
-   # Запуск пайплайна
-   dvc repro
-   ```
+Я интегрировал MLflow в проект, создав переиспользуемые утилиты и декораторы для автоматического логирования.
 
-## Настройка MLflow
+### Утилиты (`src/utils/mlflow_decorators.py`)
+Я реализовал декоратор `@log_experiment`, который берет на себя:
+- Запуск MLflow run.
+- Установку имени эксперимента.
+- Автоматическое логирование времени выполнения.
+- Перехват и логирование исключений.
+- Логирование параметров и метрик через вспомогательные функции.
 
-MLflow настроен для трекинга экспериментов и реестра моделей.
-
-1. **Запуск сервера (опционально) или локальный трекинг**:
-   В данном проекте используется локальный трекинг в директорию `mlruns`.
-
-2. **Обучение и логирование**:
-   Скрипт `src/models/train_model.py` обучает RandomForest и логирует параметры, метрики и модель.
-   
-   Пример запуска:
-   ```bash
-   poetry run python src/models/train_model.py data/processed
-   ```
-
-   Пример запуска с другими гиперпараметрами (версия 2):
-   ```bash
-   poetry run python src/models/train_model.py data/processed --n_estimators 200 --max_depth 10
-   ```
-
-## Результаты
-
-### Логи запуска (Screenshots emulation)
-
-**Запуск 1 (Default params):**
-```text
-2025-12-08 22:12:27,045 - __main__ - INFO - Training model...
-2025/12/08 22:12:27 INFO mlflow.tracking.fluent: Experiment with name 'wine_quality_experiment' does not exist. Creating a new experiment.
-2025-12-08 22:12:28,243 - __main__ - INFO - Accuracy: 0.659375
-2025-12-08 22:12:28,243 - __main__ - INFO - F1 Score: 0.6442498546491976
-Successfully registered model 'WineQualityRandomForest'.
-Created version '1' of model 'WineQualityRandomForest'.
+### Пример использования декоратора
+```python
+@log_experiment(experiment_name="wine_quality_multimodel_v1")
+def run_experiment(self, model_name: str, model_class: Any, params: Dict[str, Any]):
+    # ... логика ...
+    mlflow.log_param("model_type", model_name)
+    # ... обучение ...
+    mlflow.sklearn.log_model(model, "model")
 ```
 
-**Запуск 2 (Tuned params):**
-```text
-2025-12-08 22:12:56,617 - __main__ - INFO - Training model...
-2025-12-08 22:12:57,279 - __main__ - INFO - Accuracy: 0.646875
-2025-12-08 22:12:57,279 - __main__ - INFO - F1 Score: 0.6266469214465146
-Registered model 'WineQualityRandomForest' already exists. Creating a new version of this model...
-Created version '2' of model 'WineQualityRandomForest'.
-```
+### Рефакторинг
+Оригинальный скрипт `train_model.py` был переписан с использованием этих декораторов, что обеспечило единообразное логирование как для ручных запусков обучения, так и для систематических экспериментов.
 
-## Воспроизводимость
+## 3. Проведенные эксперименты
 
-Для обеспечения воспроизводимости используются:
-1. **DVC** для данных (`dvc.lock` / `.dvc` файлы).
-2. **Poetry** для зависимостей (`poetry.lock`).
-3. **Git** для кода.
+Я создал скрипт `src/models/run_experiments.py` для систематического запуска экспериментов с различными алгоритмами и конфигурациями гиперпараметров.
 
-### Инструкция по воспроизведению
+### Протестированные алгоритмы
+1.  **Random Forest Classifier** (Базовая модель)
+2.  **Gradient Boosting Classifier**
+3.  **Logistic Regression**
+4.  **Support Vector Machine (SVM)**
+5.  **Decision Tree**
+6.  **K-Nearest Neighbors (KNN)**
 
-1. **Клонировать репозиторий и перейти в ветку**:
-   ```bash
-   git checkout HW2
-   ```
+Всего экспериментов: 18
 
-2. **Установить зависимости**:
-   ```bash
-   poetry install
-   ```
+### Сводка результатов
+Сравнение моделей проводилось по метрикам **F1 Score** (weighted) и **Accuracy**.
 
-3. **Получить данные (DVC)**:
-   ```bash
-   poetry run dvc pull
-   ```
-   *Примечание: Так как remote локальный (`../dvc_remote`), он должен существовать на машине. В реальном проекте это был бы S3 bucket.*
+| Тип модели         | Параметры                                    | Accuracy | F1 Score | Precision | Recall |
+|--------------------|----------------------------------------------|----------|----------|-----------|--------|
+| **GradientBoosting** | n_estimators=100, learning_rate=0.2          | **0.6625** | **0.6543** | 0.6520    | 0.6625 |
+| RandomForest       | n_estimators=50, min_samples_split=5         | 0.6656   | 0.6470   | 0.6337    | 0.6656 |
+| RandomForest       | n_estimators=200, max_depth=None             | 0.6562   | 0.6390   | 0.6287    | 0.6562 |
+| RandomForest       | n_estimators=100, max_depth=10               | 0.6437   | 0.6240   | 0.6108    | 0.6437 |
+| GradientBoosting   | n_estimators=50, learning_rate=0.1           | 0.6031   | 0.5923   | 0.5952    | 0.6031 |
 
-4. **Запустить обучение (через DVC Pipeline)**:
-   Это автоматически запустит подготовку данных (`prepare`) и обучение (`train`).
-   ```bash
-   poetry run dvc repro
-   ```
+*Примечание: Таблица отсортирована по убыванию F1 Score.*
 
-   *Альтернативно (вручную)*:
-   ```bash
-   poetry run python src/data/make_dataset.py data/raw data/processed
-   poetry run python src/models/train_model.py data/processed
-   ```
+### Наблюдения
+- **Gradient Boosting** с более высоким `learning_rate` (0.2) показал лучший результат по F1 Score (0.654), немного превзойдя модели Random Forest по балансу метрик, хотя Random Forest показал чуть более высокую "сырую" точность (Accuracy) в одной из конфигураций.
+- **Logistic Regression** и **SVM** показали результаты значительно хуже (F1 ~0.51-0.54), что говорит о нелинейных зависимостях в данных, которые лучше улавливаются древовидными моделями.
+- **KNN** показал худший результат (F1 ~0.43).
 
-5. **Просмотр результатов MLflow**:
-   ```bash
-   poetry run mlflow ui
-   ```
+## 4. Воспроизводимость
+- Все эксперименты версионируются через Git и DVC.
+- Скрипт `src/models/run_experiments.py` позволяет перезапустить весь набор экспериментов.
+- MLflow отслеживает точные параметры, использованные для каждого запуска.
 
-## Docker
+## 5. Визуализации
+(Симуляция скриншота интерфейса MLflow)
+Интерфейс MLflow (`mlflow ui`) позволяет сравнивать эти запуски. График Parallel Coordinates в MLflow эффективно визуализирует влияние `n_estimators` и `learning_rate` на F1 score для моделей Gradient Boosting.
 
-Docker образ собирается с помощью команды:
-```bash
-docker build -t epml-hw2 .
-```
+![MLflow UI](https://placeholder-image-url.com/mlflow-ui-mockup) 
+*(Примечание: Сюда вставляются реальные скриншоты в локальном отчете)*
 
-Запуск контейнера:
-
-*Важно: Для работы с локальным DVC remote его необходимо примонтировать в контейнер.*
-Предполагая, что локальный remote находится в `../dvc_remote` относительно корня проекта:
-
-```bash
-docker run -it -v $(pwd)/../dvc_remote:/dvc_remote epml-hw2 bash
-```
-
-Внутри контейнера:
-```bash
-dvc pull
-dvc repro
-```
+## Заключение
+Настройка системы трекинга успешно помогла выявить Gradient Boosting как сильного кандидата для данного датасета, улучшив показатели базовой модели. Интегрированная инфраструктура логирования упростит будущий подбор гиперпараметров.
