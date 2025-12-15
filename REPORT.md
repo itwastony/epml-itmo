@@ -80,8 +80,8 @@ def run_experiment(self, model_name: str, model_class: Any, params: Dict[str, An
 (Симуляция скриншота интерфейса MLflow)
 Интерфейс MLflow (`mlflow ui`) позволяет сравнивать эти запуски. График Parallel Coordinates в MLflow эффективно визуализирует влияние `n_estimators` и `learning_rate` на F1 score для моделей Gradient Boosting.
 
-![MLflow UI](https://placeholder-image-url.com/mlflow-ui-mockup) 
-*(Примечание: Сюда вставляются реальные скриншоты в локальном отчете)*
+![MLflow UI](reports/figures/mlflow_exps_1.jpg)
+![MLflow UI](reports/figures/mlflow_exps_2.jpg)
 
 ## Заключение
 Настройка системы трекинга успешно помогла выявить Gradient Boosting как сильного кандидата для данного датасета, улучшив показатели базовой модели. Интегрированная инфраструктура логирования упростит будущий подбор гиперпараметров.
