@@ -291,7 +291,7 @@ dvc repro
 $ dvc metrics show
 ```
 
-![DVC Metrics](reports/figures/dvc_metrics.png)
+Результаты метрик представлены в таблице выше (раздел 4.1).
 
 ### 4.3 DVC DAG
 
