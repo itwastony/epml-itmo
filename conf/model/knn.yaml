@@ -1,0 +1,12 @@
+# K-Nearest Neighbors model configuration
+name: "KNN"
+_target_: "sklearn.neighbors.KNeighborsClassifier"
+
+# Model hyperparameters
+params:
+  n_neighbors: 5
+  weights: "uniform"
+  algorithm: "auto"
+  leaf_size: 30
+  p: 2  # Euclidean distance
+  n_jobs: -1
