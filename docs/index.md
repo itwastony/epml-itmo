@@ -40,6 +40,18 @@ make clearml_experiments_all
 | Decision Tree | Дерево решений |
 | KNN | K ближайших соседей |
 
+## 📈 Визуализация результатов
+
+### ClearML эксперименты
+
+![ClearML Experiments](assets/images/clearml_experiments.jpg)
+*Трекинг экспериментов в ClearML Web UI*
+
+### MLflow сравнение
+
+![MLflow Comparison](assets/images/mlflow_exps_2.jpg)
+*Сравнение моделей по accuracy в MLflow*
+
 ## 📁 Структура проекта
 
 ```

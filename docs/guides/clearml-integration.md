@@ -9,6 +9,11 @@ ClearML используется для:
 - 🔄 Оркестрация пайплайнов
 - 📈 Дашборды и визуализация
 
+### Интерфейс ClearML
+
+![ClearML Experiments](../assets/images/clearml_experiments.jpg)
+*Список экспериментов в ClearML Web UI*
+
 ## Настройка
 
 ### Облачный ClearML (рекомендуется)
@@ -74,6 +79,9 @@ def train_model(clearml_experiment=None):
 ```
 
 ## Управление моделями
+
+![ClearML Models](../assets/images/clearml_models.jpg)
+*Зарегистрированные модели в ClearML*
 
 ```python
 from src.clearml_integration import ClearMLModelManager
@@ -154,4 +162,11 @@ with ClearMLExperiment(
 ```
 
 Офлайн сессии сохраняются в `~/.clearml/cache/offline/`.
+
+## Сравнение экспериментов
+
+ClearML позволяет визуально сравнивать результаты экспериментов:
+
+![ClearML Comparison](../assets/images/clearml_comparison.jpg)
+*Сравнение метрик моделей в ClearML*
 

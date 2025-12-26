@@ -1,5 +1,17 @@
 # Сравнение моделей
 
+## Визуализация сравнения
+
+### ClearML сравнение экспериментов
+
+![ClearML Comparison](../assets/images/clearml_comparison.jpg)
+*Интерактивное сравнение метрик в ClearML Web UI*
+
+### MLflow сравнение по моделям
+
+![MLflow Scatter Plot](../assets/images/mlflow_exps_2.jpg)
+*Scatter plot accuracy по типам моделей в MLflow*
+
 ## Детальное сравнение
 
 ### Таблица метрик

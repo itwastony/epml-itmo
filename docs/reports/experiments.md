@@ -4,6 +4,11 @@
 
 Эта страница содержит результаты экспериментов по классификации качества вина.
 
+### ClearML Dashboard
+
+![ClearML Comparison](../assets/images/clearml_comparison.jpg)
+*Сравнение экспериментов в ClearML с визуализацией метрик*
+
 ## Метрики моделей
 
 !!! info "Автоматическое обновление"
@@ -87,6 +92,18 @@ make clearml_compare_models
 # Генерация отчётов
 make generate_reports
 ```
+
+## MLflow визуализация
+
+### Parallel Coordinates Plot
+
+![MLflow Parallel Coordinates](../assets/images/mlflow_exps_1.jpg)
+*Визуализация параметров и метрик в MLflow*
+
+### Scatter Plot по моделям
+
+![MLflow Scatter Plot](../assets/images/mlflow_exps_2.jpg)
+*Сравнение accuracy по типам моделей в MLflow*
 
 ## Дополнительные отчёты
 
