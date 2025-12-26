@@ -1,0 +1,58 @@
+name: Generate Experiment Reports
+
+on:
+  workflow_run:
+    workflows: ["Train Models"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  generate-reports:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.3
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Download experiment results
+        uses: actions/download-artifact@v4
+        with:
+          name: experiment-results
+          path: outputs/
+        continue-on-error: true
+
+      - name: Generate reports
+        run: |
+          poetry run python -m src.reports.generate_reports
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            outputs/reports/
+            docs/reports/
+

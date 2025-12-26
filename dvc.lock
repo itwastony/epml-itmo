@@ -1,16 +1,26 @@
 schema: '2.0'
 stages:
   prepare:
-    cmd: python src/data/make_dataset.py data/raw data/processed
+    cmd: python -m src.pipelines.prepare_data
     deps:
-    - path: data/raw/winequality-red.csv
+    - path: conf/config.yaml
       hash: md5
-      md5: 2daeecee174368f8a33b82c8cccae3a5
-      size: 84199
-    - path: src/data/make_dataset.py
+      md5: 0f693e7eafdf2dffbdecbe1887a39c38
+      size: 500
+    - path: conf/data/default.yaml
       hash: md5
-      md5: c485f51def978f2d9c6e2f92c5049db4
-      size: 1853
+      md5: ff90d2a07156af29118ad21498160520
+      size: 294
+    - path: src/pipelines/prepare_data.py
+      hash: md5
+      md5: 2010975563acf3f8875478837357313c
+      size: 5368
+    params:
+      conf/config.yaml:
+        seed: 42
+      conf/data/default.yaml:
+        random_state: ${seed}
+        test_size: 0.2
     outs:
     - path: data/processed
       hash: md5
@@ -29,3 +39,294 @@ stages:
       hash: md5
       md5: 715de07ddf949c59578ad0717ed3d400
       size: 2887
+  train_random_forest:
+    cmd: python -m src.pipelines.train_pipeline model=random_forest
+    deps:
+    - path: conf/config.yaml
+      hash: md5
+      md5: 0f693e7eafdf2dffbdecbe1887a39c38
+      size: 500
+    - path: conf/model/random_forest.yaml
+      hash: md5
+      md5: 009db803cc0475494bbc3ad4c7d2dbf0
+      size: 301
+    - path: data/processed
+      hash: md5
+      md5: e32cf3ebecf024f29e7403c2720f9f65.dir
+      size: 92145
+      nfiles: 2
+    - path: src/pipelines/monitoring.py
+      hash: md5
+      md5: d2e9c4ff1a4843f2a4530913d40f29c0
+      size: 9957
+    - path: src/pipelines/train_pipeline.py
+      hash: md5
+      md5: 0a67fe036f5c540d1af6435a196c2be3
+      size: 11725
+    params:
+      conf/model/random_forest.yaml:
+        params:
+          n_estimators: 100
+          max_depth: 10
+          min_samples_split: 2
+          min_samples_leaf: 1
+          max_features: sqrt
+          bootstrap: true
+          random_state: ${seed}
+          n_jobs: -1
+    outs:
+    - path: outputs/randomforest/metrics.json
+      hash: md5
+      md5: 8740a394154bf4df9dae5e1678329223
+      size: 351
+    - path: outputs/randomforest/pipeline_report.json
+      hash: md5
+      md5: c72edc1e12f6495755390b4991efb04d
+      size: 1612
+  train_gradient_boosting:
+    cmd: python -m src.pipelines.train_pipeline model=gradient_boosting
+    deps:
+    - path: conf/config.yaml
+      hash: md5
+      md5: 0f693e7eafdf2dffbdecbe1887a39c38
+      size: 500
+    - path: conf/model/gradient_boosting.yaml
+      hash: md5
+      md5: b5246eb98037315726a98e29a134f19b
+      size: 296
+    - path: data/processed
+      hash: md5
+      md5: e32cf3ebecf024f29e7403c2720f9f65.dir
+      size: 92145
+      nfiles: 2
+    - path: src/pipelines/monitoring.py
+      hash: md5
+      md5: d2e9c4ff1a4843f2a4530913d40f29c0
+      size: 9957
+    - path: src/pipelines/train_pipeline.py
+      hash: md5
+      md5: 0a67fe036f5c540d1af6435a196c2be3
+      size: 11725
+    params:
+      conf/model/gradient_boosting.yaml:
+        params:
+          n_estimators: 100
+          learning_rate: 0.1
+          max_depth: 3
+          min_samples_split: 2
+          min_samples_leaf: 1
+          subsample: 1.0
+          random_state: ${seed}
+    outs:
+    - path: outputs/gradientboosting/metrics.json
+      hash: md5
+      md5: b984009fc498829906a97c5997ffbd32
+      size: 348
+    - path: outputs/gradientboosting/pipeline_report.json
+      hash: md5
+      md5: 0627eb1efaebdccacb5606ff9490a992
+      size: 1602
+  train_logistic_regression:
+    cmd: python -m src.pipelines.train_pipeline model=logistic_regression
+    deps:
+    - path: conf/config.yaml
+      hash: md5
+      md5: 0f693e7eafdf2dffbdecbe1887a39c38
+      size: 500
+    - path: conf/model/logistic_regression.yaml
+      hash: md5
+      md5: d3c0db59f2560b9f0377ee317368c1a1
+      size: 238
+    - path: data/processed
+      hash: md5
+      md5: e32cf3ebecf024f29e7403c2720f9f65.dir
+      size: 92145
+      nfiles: 2
+    - path: src/pipelines/monitoring.py
+      hash: md5
+      md5: d2e9c4ff1a4843f2a4530913d40f29c0
+      size: 9957
+    - path: src/pipelines/train_pipeline.py
+      hash: md5
+      md5: 0a67fe036f5c540d1af6435a196c2be3
+      size: 11725
+    params:
+      conf/model/logistic_regression.yaml:
+        params:
+          C: 1.0
+          penalty: l2
+          solver: lbfgs
+          max_iter: 1000
+          random_state: ${seed}
+    outs:
+    - path: outputs/logisticregression/metrics.json
+      hash: md5
+      md5: 3e82c66b555205263cb78b6c40efff72
+      size: 359
+    - path: outputs/logisticregression/pipeline_report.json
+      hash: md5
+      md5: b84e6951b9d38b73189d58615d9f6113
+      size: 1528
+  train_svm:
+    cmd: python -m src.pipelines.train_pipeline model=svm
+    deps:
+    - path: conf/config.yaml
+      hash: md5
+      md5: 0f693e7eafdf2dffbdecbe1887a39c38
+      size: 500
+    - path: conf/model/svm.yaml
+      hash: md5
+      md5: 8989392bf681dba9d9218f2b843d8814
+      size: 165
+    - path: data/processed
+      hash: md5
+      md5: e32cf3ebecf024f29e7403c2720f9f65.dir
+      size: 92145
+      nfiles: 2
+    - path: src/pipelines/monitoring.py
+      hash: md5
+      md5: d2e9c4ff1a4843f2a4530913d40f29c0
+      size: 9957
+    - path: src/pipelines/train_pipeline.py
+      hash: md5
+      md5: 0a67fe036f5c540d1af6435a196c2be3
+      size: 11725
+    params:
+      conf/model/svm.yaml:
+        params:
+          C: 1.0
+          kernel: rbf
+          gamma: scale
+          random_state: ${seed}
+    outs:
+    - path: outputs/svm/metrics.json
+      hash: md5
+      md5: 1765a3dc33179a2b335b2bd8b3cb3dd6
+      size: 343
+    - path: outputs/svm/pipeline_report.json
+      hash: md5
+      md5: d5fa3b762f64f06b9bacb57f2e78d8bb
+      size: 1476
+  train_decision_tree:
+    cmd: python -m src.pipelines.train_pipeline model=decision_tree
+    deps:
+    - path: conf/config.yaml
+      hash: md5
+      md5: 0f693e7eafdf2dffbdecbe1887a39c38
+      size: 500
+    - path: conf/model/decision_tree.yaml
+      hash: md5
+      md5: 8bd548ac7ed28073f3d276ee1fca8fc1
+      size: 243
+    - path: data/processed
+      hash: md5
+      md5: e32cf3ebecf024f29e7403c2720f9f65.dir
+      size: 92145
+      nfiles: 2
+    - path: src/pipelines/monitoring.py
+      hash: md5
+      md5: d2e9c4ff1a4843f2a4530913d40f29c0
+      size: 9957
+    - path: src/pipelines/train_pipeline.py
+      hash: md5
+      md5: 0a67fe036f5c540d1af6435a196c2be3
+      size: 11725
+    params:
+      conf/model/decision_tree.yaml:
+        params:
+          max_depth: 10
+          min_samples_split: 2
+          min_samples_leaf: 1
+          criterion: gini
+          random_state: ${seed}
+    outs:
+    - path: outputs/decisiontree/metrics.json
+      hash: md5
+      md5: f2d5834a94d8163089349ec24990022a
+      size: 344
+    - path: outputs/decisiontree/pipeline_report.json
+      hash: md5
+      md5: ffe0cfe4a8c6c1b732ab476d401660dd
+      size: 1539
+  train_knn:
+    cmd: python -m src.pipelines.train_pipeline model=knn
+    deps:
+    - path: conf/config.yaml
+      hash: md5
+      md5: 0f693e7eafdf2dffbdecbe1887a39c38
+      size: 500
+    - path: conf/model/knn.yaml
+      hash: md5
+      md5: 48a5609baa64a6642e2836d4cd27cc5c
+      size: 254
+    - path: data/processed
+      hash: md5
+      md5: e32cf3ebecf024f29e7403c2720f9f65.dir
+      size: 92145
+      nfiles: 2
+    - path: src/pipelines/monitoring.py
+      hash: md5
+      md5: d2e9c4ff1a4843f2a4530913d40f29c0
+      size: 9957
+    - path: src/pipelines/train_pipeline.py
+      hash: md5
+      md5: 0a67fe036f5c540d1af6435a196c2be3
+      size: 11725
+    params:
+      conf/model/knn.yaml:
+        params:
+          n_neighbors: 5
+          weights: uniform
+          algorithm: auto
+          leaf_size: 30
+          p: 2
+          n_jobs: -1
+    outs:
+    - path: outputs/knn/metrics.json
+      hash: md5
+      md5: 17ec88c3113f44c1206c220074c26907
+      size: 343
+    - path: outputs/knn/pipeline_report.json
+      hash: md5
+      md5: 8670988def549f6bdd474760db8e350e
+      size: 1519
+  evaluate:
+    cmd: python -m src.pipelines.evaluate_models
+    deps:
+    - path: outputs/decisiontree/metrics.json
+      hash: md5
+      md5: f2d5834a94d8163089349ec24990022a
+      size: 344
+    - path: outputs/gradientboosting/metrics.json
+      hash: md5
+      md5: b984009fc498829906a97c5997ffbd32
+      size: 348
+    - path: outputs/knn/metrics.json
+      hash: md5
+      md5: 17ec88c3113f44c1206c220074c26907
+      size: 343
+    - path: outputs/logisticregression/metrics.json
+      hash: md5
+      md5: 3e82c66b555205263cb78b6c40efff72
+      size: 359
+    - path: outputs/randomforest/metrics.json
+      hash: md5
+      md5: 8740a394154bf4df9dae5e1678329223
+      size: 351
+    - path: outputs/svm/metrics.json
+      hash: md5
+      md5: 1765a3dc33179a2b335b2bd8b3cb3dd6
+      size: 343
+    - path: src/pipelines/evaluate_models.py
+      hash: md5
+      md5: d375924fefbc7c3697dbb28e8943e3e0
+      size: 7035
+    outs:
+    - path: outputs/comparison/best_model.json
+      hash: md5
+      md5: df0009a067adc5ce9c34fa9627641f13
+      size: 464
+    - path: outputs/comparison/metrics_comparison.csv
+      hash: md5
+      md5: c8dd433e3bccfd956775b116f57a4a37
+      size: 1075

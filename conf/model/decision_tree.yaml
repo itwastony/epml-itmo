@@ -1,0 +1,11 @@
+# Decision Tree model configuration
+name: "DecisionTree"
+_target_: "sklearn.tree.DecisionTreeClassifier"
+
+# Model hyperparameters
+params:
+  max_depth: 10
+  min_samples_split: 2
+  min_samples_leaf: 1
+  criterion: "gini"
+  random_state: ${seed}

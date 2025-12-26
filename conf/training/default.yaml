@@ -1,0 +1,20 @@
+# Training configuration
+cv_folds: 5
+shuffle: true
+
+# Metrics to track
+metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1_score
+
+# Model registration
+register_model: true
+model_name: "${model.name}"
+
+# Early stopping (for applicable models)
+early_stopping:
+  enabled: false
+  patience: 10
+  min_delta: 0.001

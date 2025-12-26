@@ -52,6 +52,9 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# MkDocs build
+site/
+
 # PyBuilder
 target/
 
@@ -99,3 +102,17 @@ target/
 .mypy_cache/
 .ruff_cache/
 mlruns/
+
+# Hydra outputs
+outputs/
+multirun/
+
+# ClearML
+clearml/.env
+clearml/clearml.conf
+~/clearml.conf
+*.joblib
+
+# Keep ClearML examples and configs
+!clearml/env.example
+!clearml/clearml.conf.example

@@ -1,0 +1,64 @@
+# ClearML Configuration File
+# Copy to ~/clearml.conf or set CLEARML_CONFIG_FILE env variable
+#
+# Generate credentials in ClearML Web UI:
+# 1. Go to Settings -> Workspace
+# 2. Create new credentials
+# 3. Copy access_key and secret_key
+
+api {
+    # ClearML API server
+    web_server: http://localhost:8080
+    api_server: http://localhost:8008
+    files_server: http://localhost:8081
+    
+    # Credentials - get from ClearML Web UI
+    credentials {
+        "access_key" = "YOUR_ACCESS_KEY"
+        "secret_key" = "YOUR_SECRET_KEY"
+    }
+}
+
+# SDK configuration
+sdk {
+    # Default output URI for models and artifacts
+    default_output_uri: "file://outputs/clearml"
+    
+    # Development mode settings
+    development {
+        # Store models locally in development
+        store_development_task_output_uri: "file://outputs/clearml/dev"
+        
+        # Support async logging
+        support_async: true
+    }
+    
+    # AWS S3 configuration (if using cloud storage)
+    # aws {
+    #     s3 {
+    #         credentials {
+    #             access_key: ""
+    #             secret_key: ""
+    #         }
+    #     }
+    # }
+}
+
+# Agent configuration (for remote execution)
+agent {
+    # Default queue to pull tasks from
+    default_queue: "default"
+    
+    # Git configuration
+    git {
+        # Git user for cloning
+        user: ""
+        pass: ""
+    }
+    
+    # Docker default image
+    default_docker {
+        image: "python:3.12-slim"
+    }
+}
+

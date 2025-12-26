@@ -1,0 +1,13 @@
+# Data configuration
+raw_path: "data/raw"
+processed_path: "data/processed"
+train_file: "train.csv"
+test_file: "test.csv"
+target_column: "quality"
+test_size: 0.2
+random_state: ${seed}
+
+# Data preprocessing options
+preprocessing:
+  normalize: false
+  handle_missing: "drop"  # drop, mean, median
