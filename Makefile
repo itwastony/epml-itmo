@@ -226,6 +226,49 @@ clearml_clean:
 
 
 #################################################################################
+# HW6: Documentation and Reports                                                #
+#################################################################################
+
+## Build documentation with MkDocs
+docs_build:
+	mkdocs build --strict
+	@echo "Documentation built in site/"
+
+## Serve documentation locally
+docs_serve:
+	mkdocs serve
+	@echo "Documentation available at http://127.0.0.1:8000"
+
+## Deploy documentation to GitHub Pages
+docs_deploy:
+	mkdocs gh-deploy --force
+	@echo "Documentation deployed to GitHub Pages"
+
+## Generate experiment reports
+generate_reports:
+	$(PYTHON_INTERPRETER) -m src.reports.generate_reports
+	@echo "Reports generated in outputs/reports/"
+
+## Generate all reports (experiments + docs update)
+reports_all: generate_reports docs_build
+	@echo "All reports generated!"
+
+## Verify reproducibility (run experiments twice and compare)
+verify_reproducibility:
+	@echo "Running first experiment set..."
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.run_experiments --all --offline
+	cp -r outputs/clearml/models outputs/clearml/models_run1
+	@echo "Running second experiment set..."
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.run_experiments --all --offline
+	@echo "Comparing results..."
+	@echo "Results saved in outputs/clearml/models and outputs/clearml/models_run1"
+
+## Full documentation workflow
+docs_full: generate_reports docs_build
+	@echo "Full documentation workflow completed!"
+
+
+#################################################################################
 # Self Documenting Commands                                                     #
 #################################################################################
 
