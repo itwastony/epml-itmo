@@ -103,3 +103,13 @@ mlruns/
 # Hydra outputs
 outputs/
 multirun/
+
+# ClearML
+clearml/.env
+clearml/clearml.conf
+~/clearml.conf
+*.joblib
+
+# Keep ClearML examples and configs
+!clearml/env.example
+!clearml/clearml.conf.example

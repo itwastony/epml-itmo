@@ -142,6 +142,88 @@ run_full: clean_outputs pipeline evaluate
 	@echo "Full pipeline completed!"
 
 
+#################################################################################
+# HW5: ClearML MLOps                                                            #
+#################################################################################
+
+## Start ClearML Server (Docker)
+clearml_server_start:
+	cd clearml && docker-compose up -d
+	@echo "ClearML Server started!"
+	@echo "Web UI: http://localhost:8080"
+	@echo "API: http://localhost:8008"
+	@echo "Files: http://localhost:8081"
+
+## Stop ClearML Server
+clearml_server_stop:
+	cd clearml && docker-compose down
+	@echo "ClearML Server stopped"
+
+## Show ClearML Server status
+clearml_server_status:
+	cd clearml && docker-compose ps
+
+## Setup ClearML configuration
+clearml_setup:
+	$(PYTHON_INTERPRETER) clearml/setup_clearml.py --status
+
+## Test ClearML connection
+clearml_test:
+	$(PYTHON_INTERPRETER) clearml/setup_clearml.py --test
+
+## Create ClearML project structure
+clearml_create_project:
+	$(PYTHON_INTERPRETER) clearml/setup_clearml.py --create-project
+
+## Run single experiment with ClearML (usage: make clearml_experiment MODEL=RandomForest)
+clearml_experiment:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.run_experiments --model $(MODEL)
+
+## Run all experiments with ClearML tracking
+clearml_experiments_all:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.run_experiments --all
+
+## Run experiments in offline mode (no server required)
+clearml_experiments_offline:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.run_experiments --all --offline
+
+## Compare ClearML experiments
+clearml_compare:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.run_experiments --compare
+
+## Compare registered models
+clearml_compare_models:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.run_experiments --compare-models
+
+## Run ClearML pipeline for single model (usage: make clearml_pipeline MODEL=RandomForest)
+clearml_pipeline:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.pipeline --model $(MODEL)
+
+## Run ClearML pipeline for all models
+clearml_pipeline_all:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.pipeline --all
+
+## Generate ClearML dashboard report
+clearml_dashboard:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.dashboard --summary
+
+## Generate full ClearML report
+clearml_report:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.dashboard --report
+
+## Export ClearML metrics and reports
+clearml_export:
+	$(PYTHON_INTERPRETER) -m src.clearml_integration.dashboard --all
+
+## Full ClearML workflow: experiments + comparison + report
+clearml_full: clearml_experiments_all clearml_compare_models clearml_report
+	@echo "Full ClearML workflow completed!"
+
+## Clean ClearML outputs
+clearml_clean:
+	rm -rf outputs/clearml/
+	@echo "ClearML outputs cleaned"
+
 
 #################################################################################
 # Self Documenting Commands                                                     #

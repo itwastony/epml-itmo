@@ -5,12 +5,19 @@ defaults:
   - model: random_forest
   - data: default
   - training: default
+  - clearml: default
   - _self_
 
 # MLflow configuration
 mlflow:
   tracking_uri: "file://${hydra:runtime.cwd}/mlruns"
   experiment_name: "wine_quality_hydra"
+
+# ClearML configuration (overridable)
+clearml:
+  enabled: true
+  project_name: "EPML-ITMO/Wine-Quality"
+  offline_mode: false
 
 # Logging configuration
 logging:

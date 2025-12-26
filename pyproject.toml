@@ -17,6 +17,7 @@ mlflow = "^3.7.0"
 hydra-core = "^1.3.2"
 omegaconf = "^2.3.0"
 pydantic = "^2.12.5"
+clearml = "^2.1.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.14.6"
@@ -40,6 +41,21 @@ ignore = []
 python_version = "3.12"
 strict = true
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "clearml",
+    "clearml.*",
+    "setup_clearml",
+]
+ignore_missing_imports = true
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "src.clearml_integration.*",
+]
+disable_error_code = ["attr-defined", "no-untyped-call"]
 
 [tool.bandit]
 exclude_dirs = ["tests", ".venv"]
