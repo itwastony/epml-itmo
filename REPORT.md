@@ -582,20 +582,18 @@ make clearml_report
 ### ClearML Web UI - Эксперименты
 *После запуска `make clearml_experiments_all` в Web UI отображаются все эксперименты с метриками.*
 
-![ClearML Experiments](reports/figures/clearml_experiments.png)
+![ClearML Experiments](reports/figures/clearml_experiments.jpg)
 
 ### ClearML Web UI - Сравнение
 *Функция сравнения позволяет визуально сопоставить результаты разных моделей.*
 
-![ClearML Comparison](reports/figures/clearml_comparison.png)
+![ClearML Comparison](reports/figures/clearml_comparison.jpg)
 
 ### ClearML Web UI - Модели
 *Реестр моделей с версионированием и метаданными.*
 
-![ClearML Models](reports/figures/clearml_models.png)
+![ClearML Models](reports/figures/clearml_models.jpg)
 
-> **Примечание:** Для получения скриншотов запустите ClearML Server и выполните эксперименты.
-> Скриншоты будут доступны в Web UI по адресу http://localhost:8080
 
 ---
 
