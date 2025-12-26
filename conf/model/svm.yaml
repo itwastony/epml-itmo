@@ -1,0 +1,10 @@
+# SVM model configuration
+name: "SVM"
+_target_: "sklearn.svm.SVC"
+
+# Model hyperparameters
+params:
+  C: 1.0
+  kernel: "rbf"
+  gamma: "scale"
+  random_state: ${seed}

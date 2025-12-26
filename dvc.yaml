@@ -1,15 +1,151 @@
 stages:
+  # Data preparation stage - downloads and splits data
   prepare:
-    cmd: python src/data/make_dataset.py data/raw data/processed
+    cmd: python -m src.pipelines.prepare_data
     deps:
-      - data/raw/winequality-red.csv
-      - src/data/make_dataset.py
+      - src/pipelines/prepare_data.py
+      - conf/data/default.yaml
+      - conf/config.yaml
+    params:
+      - conf/config.yaml:
+          - seed
+      - conf/data/default.yaml:
+          - test_size
+          - random_state
     outs:
-      - data/processed
+      - data/processed:
+          cache: true
 
-  train:
-    cmd: python src/models/train_model.py data/processed
+  # Training stage with Random Forest
+  train_random_forest:
+    cmd: python -m src.pipelines.train_pipeline model=random_forest
     deps:
       - data/processed
-      - src/models/train_model.py
+      - src/pipelines/train_pipeline.py
+      - src/pipelines/monitoring.py
+      - conf/model/random_forest.yaml
+      - conf/config.yaml
+    params:
+      - conf/model/random_forest.yaml:
+          - params
+    plots:
+      - outputs/randomforest/pipeline_report.json:
+          cache: false
+    metrics:
+      - outputs/randomforest/metrics.json:
+          cache: false
 
+  # Training stage with Gradient Boosting
+  train_gradient_boosting:
+    cmd: python -m src.pipelines.train_pipeline model=gradient_boosting
+    deps:
+      - data/processed
+      - src/pipelines/train_pipeline.py
+      - src/pipelines/monitoring.py
+      - conf/model/gradient_boosting.yaml
+      - conf/config.yaml
+    params:
+      - conf/model/gradient_boosting.yaml:
+          - params
+    plots:
+      - outputs/gradientboosting/pipeline_report.json:
+          cache: false
+    metrics:
+      - outputs/gradientboosting/metrics.json:
+          cache: false
+
+  # Training stage with Logistic Regression
+  train_logistic_regression:
+    cmd: python -m src.pipelines.train_pipeline model=logistic_regression
+    deps:
+      - data/processed
+      - src/pipelines/train_pipeline.py
+      - src/pipelines/monitoring.py
+      - conf/model/logistic_regression.yaml
+      - conf/config.yaml
+    params:
+      - conf/model/logistic_regression.yaml:
+          - params
+    plots:
+      - outputs/logisticregression/pipeline_report.json:
+          cache: false
+    metrics:
+      - outputs/logisticregression/metrics.json:
+          cache: false
+
+  # Training stage with SVM
+  train_svm:
+    cmd: python -m src.pipelines.train_pipeline model=svm
+    deps:
+      - data/processed
+      - src/pipelines/train_pipeline.py
+      - src/pipelines/monitoring.py
+      - conf/model/svm.yaml
+      - conf/config.yaml
+    params:
+      - conf/model/svm.yaml:
+          - params
+    plots:
+      - outputs/svm/pipeline_report.json:
+          cache: false
+    metrics:
+      - outputs/svm/metrics.json:
+          cache: false
+
+  # Training stage with Decision Tree
+  train_decision_tree:
+    cmd: python -m src.pipelines.train_pipeline model=decision_tree
+    deps:
+      - data/processed
+      - src/pipelines/train_pipeline.py
+      - src/pipelines/monitoring.py
+      - conf/model/decision_tree.yaml
+      - conf/config.yaml
+    params:
+      - conf/model/decision_tree.yaml:
+          - params
+    plots:
+      - outputs/decisiontree/pipeline_report.json:
+          cache: false
+    metrics:
+      - outputs/decisiontree/metrics.json:
+          cache: false
+
+  # Training stage with KNN
+  train_knn:
+    cmd: python -m src.pipelines.train_pipeline model=knn
+    deps:
+      - data/processed
+      - src/pipelines/train_pipeline.py
+      - src/pipelines/monitoring.py
+      - conf/model/knn.yaml
+      - conf/config.yaml
+    params:
+      - conf/model/knn.yaml:
+          - params
+    plots:
+      - outputs/knn/pipeline_report.json:
+          cache: false
+    metrics:
+      - outputs/knn/metrics.json:
+          cache: false
+
+  # Evaluate all models - compare results
+  evaluate:
+    cmd: python -m src.pipelines.evaluate_models
+    deps:
+      - outputs/randomforest/metrics.json
+      - outputs/gradientboosting/metrics.json
+      - outputs/logisticregression/metrics.json
+      - outputs/svm/metrics.json
+      - outputs/decisiontree/metrics.json
+      - outputs/knn/metrics.json
+      - src/pipelines/evaluate_models.py
+    metrics:
+      - outputs/comparison/best_model.json:
+          cache: false
+    plots:
+      - outputs/comparison/metrics_comparison.csv:
+          cache: false
+          x: model
+          y: accuracy

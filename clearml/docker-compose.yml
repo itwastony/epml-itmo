@@ -1,0 +1,146 @@
+# ClearML Server Docker Compose Configuration
+# For HW5: ClearML MLOps Setup
+#
+# Usage:
+#   cd clearml && docker-compose up -d
+#
+# Access:
+#   - Web UI: http://localhost:8080
+#   - API: http://localhost:8008
+#   - Files: http://localhost:8081
+
+version: "3.8"
+
+services:
+  # MongoDB - Main database for ClearML
+  mongo:
+    image: mongo:6.0
+    container_name: clearml-mongo
+    restart: unless-stopped
+    command: --setParameter internalQueryMaxBlockingSortMemoryUsageBytes=196100200
+    volumes:
+      - clearml-mongo-data:/data/db
+      - clearml-mongo-config:/data/configdb
+    networks:
+      - clearml-network
+
+  # Elasticsearch - Search and analytics
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: clearml-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.routing.allocation.disk.threshold_enabled=false
+    volumes:
+      - clearml-elastic-data:/usr/share/elasticsearch/data
+    networks:
+      - clearml-network
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  # Redis - Caching and session management
+  redis:
+    image: redis:7
+    container_name: clearml-redis
+    restart: unless-stopped
+    volumes:
+      - clearml-redis-data:/data
+    networks:
+      - clearml-network
+
+  # ClearML API Server
+  apiserver:
+    image: allegroai/clearml:latest
+    container_name: clearml-apiserver
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - elasticsearch
+      - redis
+    environment:
+      - CLEARML_HOST_IP=${CLEARML_HOST_IP:-localhost}
+      - CLEARML__SECURE__CREDENTIALS__APISERVER__access_key=${CLEARML_ACCESS_KEY:-}
+      - CLEARML__SECURE__CREDENTIALS__APISERVER__secret_key=${CLEARML_SECRET_KEY:-}
+      - CLEARML__APISERVER__DEFAULT_COMPANY=epml-itmo
+    volumes:
+      - clearml-logs:/var/log/clearml
+      - clearml-config:/opt/clearml/config
+      - clearml-data-fileserver:/mnt/fileserver
+    ports:
+      - "8008:8008"
+    networks:
+      - clearml-network
+
+  # ClearML Web Server (UI)
+  webserver:
+    image: allegroai/clearml:latest
+    container_name: clearml-webserver
+    restart: unless-stopped
+    depends_on:
+      - apiserver
+    environment:
+      - CLEARML_HOST_IP=${CLEARML_HOST_IP:-localhost}
+    ports:
+      - "8080:80"
+    networks:
+      - clearml-network
+
+  # ClearML File Server
+  fileserver:
+    image: allegroai/clearml:latest
+    container_name: clearml-fileserver
+    restart: unless-stopped
+    depends_on:
+      - apiserver
+    volumes:
+      - clearml-data-fileserver:/mnt/fileserver
+    ports:
+      - "8081:8081"
+    networks:
+      - clearml-network
+
+  # ClearML Agent (optional - for remote execution)
+  agent:
+    image: allegroai/clearml-agent:latest
+    container_name: clearml-agent
+    restart: unless-stopped
+    depends_on:
+      - apiserver
+    environment:
+      - CLEARML_API_HOST=http://apiserver:8008
+      - CLEARML_WEB_HOST=http://webserver:80
+      - CLEARML_FILES_HOST=http://fileserver:8081
+      - CLEARML_API_ACCESS_KEY=${CLEARML_ACCESS_KEY:-}
+      - CLEARML_API_SECRET_KEY=${CLEARML_SECRET_KEY:-}
+      - CLEARML_AGENT_GIT_USER=${GIT_USER:-}
+      - CLEARML_AGENT_GIT_PASS=${GIT_PASS:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - clearml-agent-data:/root/.clearml
+    networks:
+      - clearml-network
+    profiles:
+      - agent  # Only starts with --profile agent
+
+networks:
+  clearml-network:
+    driver: bridge
+
+volumes:
+  clearml-mongo-data:
+  clearml-mongo-config:
+  clearml-elastic-data:
+  clearml-redis-data:
+  clearml-logs:
+  clearml-config:
+  clearml-data-fileserver:
+  clearml-agent-data:
+

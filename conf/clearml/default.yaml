@@ -1,0 +1,39 @@
+# ClearML Configuration for Hydra
+
+# ClearML Server settings
+server:
+  api_host: "http://localhost:8008"
+  web_host: "http://localhost:8080"
+  files_host: "http://localhost:8081"
+
+# Project settings
+project:
+  name: "EPML-ITMO/Wine-Quality"
+  experiments_subproject: "Experiments"
+  models_subproject: "Models"
+  pipelines_subproject: "Pipelines"
+
+# Experiment settings
+experiment:
+  auto_connect_frameworks: true
+  auto_log_artifacts: true
+  offline_mode: false
+
+# Model settings
+model:
+  output_uri: "outputs/clearml/models"
+  auto_version: true
+  register_after_training: true
+
+# Pipeline settings
+pipeline:
+  default_queue: "default"
+  local_mode: true
+  save_results: true
+
+# Notification settings
+notifications:
+  enabled: true
+  on_success: true
+  on_failure: true
+

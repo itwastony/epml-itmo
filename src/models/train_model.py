@@ -11,7 +11,65 @@ from dotenv import find_dotenv, load_dotenv
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
+# Add project root to path
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from src.utils.mlflow_decorators import (  # noqa: E402
+    log_experiment,
+    log_metrics,
+    log_params,
+)
+
 warnings.filterwarnings("ignore")
+logger = logging.getLogger(__name__)
+
+
+@log_experiment(experiment_name="wine_quality_experiment")
+def train_rf(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_test: pd.DataFrame,
+    y_test: pd.Series,
+    n_estimators: int,
+    max_depth: int,
+) -> None:
+    """Train Random Forest model."""
+    # Log parameters
+    log_params({"n_estimators": n_estimators, "max_depth": max_depth})
+
+    # Train model
+    clf = RandomForestClassifier(
+        n_estimators=n_estimators, max_depth=max_depth, random_state=42
+    )
+    clf.fit(X_train, y_train)
+
+    # Predict
+    y_pred = clf.predict(X_test)
+
+    # metrics
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average="weighted")
+    recall = recall_score(y_test, y_pred, average="weighted")
+    f1 = f1_score(y_test, y_pred, average="weighted")
+
+    logger.info(f"Accuracy: {accuracy}")
+    logger.info(f"F1 Score: {f1}")
+
+    # Log metrics
+    log_metrics(
+        {
+            "accuracy": float(accuracy),
+            "precision": float(precision),
+            "recall": float(recall),
+            "f1_score": float(f1),
+        }
+    )
+
+    # Log model
+    mlflow.sklearn.log_model(
+        clf, "model", registered_model_name="WineQualityRandomForest"
+    )
+    logger.info("Model logged to MLflow")
 
 
 @click.command()  # type: ignore[misc]
@@ -24,7 +82,6 @@ warnings.filterwarnings("ignore")
 )
 def main(input_filepath: str, n_estimators: int, max_depth: int) -> None:
     """Trains a model on processed data."""
-    logger = logging.getLogger(__name__)
     logger.info("Training model...")
 
     # Load data
@@ -45,42 +102,9 @@ def main(input_filepath: str, n_estimators: int, max_depth: int) -> None:
 
     # Set up MLflow
     mlflow.set_tracking_uri("file://" + str(Path.cwd() / "mlruns"))
-    mlflow.set_experiment("wine_quality_experiment")
 
-    with mlflow.start_run():
-        # Log parameters
-        mlflow.log_param("n_estimators", n_estimators)
-        mlflow.log_param("max_depth", max_depth)
-
-        # Train model
-        clf = RandomForestClassifier(
-            n_estimators=n_estimators, max_depth=max_depth, random_state=42
-        )
-        clf.fit(X_train, y_train)
-
-        # Predict
-        y_pred = clf.predict(X_test)
-
-        # metrics
-        accuracy = accuracy_score(y_test, y_pred)
-        precision = precision_score(y_test, y_pred, average="weighted")
-        recall = recall_score(y_test, y_pred, average="weighted")
-        f1 = f1_score(y_test, y_pred, average="weighted")
-
-        logger.info(f"Accuracy: {accuracy}")
-        logger.info(f"F1 Score: {f1}")
-
-        # Log metrics
-        mlflow.log_metric("accuracy", accuracy)
-        mlflow.log_metric("precision", precision)
-        mlflow.log_metric("recall", recall)
-        mlflow.log_metric("f1_score", f1)
-
-        # Log model
-        mlflow.sklearn.log_model(
-            clf, "model", registered_model_name="WineQualityRandomForest"
-        )
-        logger.info("Model logged to MLflow")
+    # Run training
+    train_rf(X_train, y_train, X_test, y_test, n_estimators, max_depth)
 
 
 if __name__ == "__main__":
