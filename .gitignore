@@ -75,13 +75,17 @@ target/
 .ipynb_checkpoints/
 
 # Data
-/data/
+#/data/
+/data/external/
+/data/interim/
+/data/processed/
 
 # Models
 *.pkl
 *.h5
 *.pth
 *.onnx
+#/models/
 /models/
 
 # Mac OS-specific storage files
@@ -94,3 +98,4 @@ target/
 # Mypy cache
 .mypy_cache/
 .ruff_cache/
+mlruns/

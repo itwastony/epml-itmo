@@ -1,0 +1,15 @@
+stages:
+  prepare:
+    cmd: python src/data/make_dataset.py data/raw data/processed
+    deps:
+      - data/raw/winequality-red.csv
+      - src/data/make_dataset.py
+    outs:
+      - data/processed
+
+  train:
+    cmd: python src/models/train_model.py data/processed
+    deps:
+      - data/processed
+      - src/models/train_model.py
+
