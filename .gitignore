@@ -99,3 +99,7 @@ target/
 .mypy_cache/
 .ruff_cache/
 mlruns/
+
+# Hydra outputs
+outputs/
+multirun/

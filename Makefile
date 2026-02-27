@@ -80,6 +80,67 @@ test_environment:
 # PROJECT RULES                                                                 #
 #################################################################################
 
+#################################################################################
+# HW4: ML Pipeline Automation                                                   #
+#################################################################################
+
+## Prepare data using Hydra config
+prepare:
+	$(PYTHON_INTERPRETER) -m src.pipelines.prepare_data
+
+## Train single model (usage: make train MODEL=random_forest)
+train:
+	$(PYTHON_INTERPRETER) -m src.pipelines.train_pipeline model=$(MODEL)
+
+## Train Random Forest model
+train_rf:
+	$(PYTHON_INTERPRETER) -m src.pipelines.train_pipeline model=random_forest
+
+## Train Gradient Boosting model
+train_gb:
+	$(PYTHON_INTERPRETER) -m src.pipelines.train_pipeline model=gradient_boosting
+
+## Train all models sequentially
+train_all:
+	$(PYTHON_INTERPRETER) -m src.pipelines.run_all_models
+
+## Evaluate and compare all models
+evaluate:
+	$(PYTHON_INTERPRETER) -m src.pipelines.evaluate_models
+
+## Run full DVC pipeline (prepare + all models + evaluate)
+pipeline:
+	dvc repro
+
+## Run DVC pipeline for specific stage
+pipeline_stage:
+	dvc repro $(STAGE)
+
+## Show DVC pipeline DAG
+dag:
+	dvc dag
+
+## Show DVC metrics
+metrics:
+	dvc metrics show
+
+## Compare DVC metrics with previous runs
+metrics_diff:
+	dvc metrics diff
+
+## Show DVC params
+params:
+	dvc params diff
+
+## Clean output directories
+clean_outputs:
+	rm -rf outputs/
+	rm -rf multirun/
+
+## Run full pipeline from scratch
+run_full: clean_outputs pipeline evaluate
+	@echo "Full pipeline completed!"
+
 
 
 #################################################################################
